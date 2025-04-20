@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ai-proposal-writer
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: "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"
+        sync: false

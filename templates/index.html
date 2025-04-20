@@ -1,0 +1,221 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Freelancing Proposal Writer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>window.jsPDF = window.jspdf.jsPDF;</script>
+
+  <style>
+    :root {
+      --bg-color: linear-gradient(to right, #83a4d4, #b6fbff);
+      --text-color: #000;
+      --box-bg: #ffffffee;
+      --proposal-bg: #e7f4ff;
+      --button-bg: #007BFF;
+      --copy-bg: #28a745;
+      --pdf-bg: #ff9800;
+      --input-bg: #ffffff;
+    }
+
+    [data-theme='dark'] {
+      --bg-color: #1e1e1e;
+      --text-color: #f0f0f0;
+      --box-bg: #2a2a2a;
+      --proposal-bg: #2e3b4e;
+      --button-bg: #0056b3;
+      --copy-bg: #2ecc71;
+      --pdf-bg: #f39c12;
+      --input-bg: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      transition: background 0.4s ease, color 0.3s ease;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: var(--box-bg);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--text-color);
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    textarea {
+      resize: vertical;
+      height: 120px;
+    }
+
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 14px;
+      background-color: var(--button-bg);
+      color: white;
+      font-size: 17px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.1s ease, background-color 0.3s;
+    }
+
+    button:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    .proposal-box {
+      margin-top: 30px;
+      background-color: var(--proposal-bg);
+      padding: 25px;
+      border-left: 6px solid var(--button-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .proposal-box h3 {
+      margin-top: 0;
+    }
+
+    .proposal-box p {
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .copy-button {
+      background-color: var(--copy-bg);
+    }
+
+    .pdf-button {
+      background-color: var(--pdf-bg);
+    }
+
+    .theme-toggle {
+      margin-bottom: 10px;
+      float: right;
+    }
+
+    select {
+      font-size: 14px;
+      padding: 5px;
+      border-radius: 6px;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle">
+    <label for="themeSelect">🌓 Theme:</label>
+    <select id="themeSelect" onchange="setTheme(this.value)">
+      <option value="auto">Auto</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+
+  <div class="container">
+    <h1>🌟 AI Freelancing Proposal Writer</h1>
+    <form method="post">
+      <label>Service Type:</label>
+      <input type="text" name="service" required>
+
+      <label>Client Needs:</label>
+      <textarea name="client_needs" required></textarea>
+
+      <label>Your Experience:</label>
+      <input type="text" name="experience" required>
+
+      <button type="submit">🚀 Generate Proposal</button>
+    </form>
+
+    {% if proposal %}
+    <div class="proposal-box" id="proposal-content">
+      <h3>📄 Generated Proposal:</h3>
+      <p id="proposal-output">{{ proposal | safe }}</p>
+      <button class="copy-button" onclick="copyProposal()">📋 Copy to Clipboard</button>
+      <button class="pdf-button" onclick="downloadPDF()">💾 Download as PDF</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function copyProposal() {
+      const tempElement = document.createElement("textarea");
+      tempElement.innerHTML = document.getElementById("proposal-output").innerText;
+      document.body.appendChild(tempElement);
+      tempElement.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempElement);
+      alert("✅ Proposal copied to clipboard!");
+    }
+
+    function downloadPDF() {
+      const text = document.getElementById("proposal-output").innerText;
+      const doc = new jsPDF();
+      const lines = doc.splitTextToSize(text, 180);
+      doc.setFontSize(12);
+      doc.text("AI Freelancing Proposal", 14, 20);
+      doc.text(lines, 14, 30);
+      doc.save("freelancing_proposal.pdf");
+    }
+
+    function setTheme(mode) {
+      if (mode === 'auto') {
+        localStorage.removeItem('theme');
+        applySystemTheme();
+      } else {
+        document.documentElement.setAttribute('data-theme', mode);
+        localStorage.setItem('theme', mode);
+      }
+    }
+
+    function applySystemTheme() {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+
+    window.onload = function () {
+      const savedTheme = localStorage.getItem('theme') || 'auto';
+      document.getElementById('themeSelect').value = savedTheme;
+      if (savedTheme === 'auto') {
+        applySystemTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(applySystemTheme);
+      } else {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+    };
+  </script>
+</body>
+</html>
