@@ -1,5 +1,3 @@
-# app.py
-
 from flask import Flask, render_template, request
 import os
 import requests
@@ -11,7 +9,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 app = Flask(__name__)
 
-def generate_proposal_with_groq(service_type, client_description, experience_level):
+def generate_proposal_with_groq(project_name, project_details, experience_level):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -19,10 +17,10 @@ def generate_proposal_with_groq(service_type, client_description, experience_lev
     }
 
     prompt = f"""
-    Write a professional Fiverr/Upwork proposal for the following gig:
+    Write a professional Fiverr/Upwork proposal for the following project:
 
-    ✦ Service: {service_type}
-    ✦ Client Request: {client_description}
+    ✦ Project Name: {project_name}
+    ✦ Project Details: {project_details}
     ✦ My Experience Level: {experience_level}
 
     Write it in a convincing and friendly tone. Start with a greeting, talk briefly about your experience, show understanding of the client's needs, and end with a strong call to action. Use bullet points if needed.
@@ -48,10 +46,10 @@ def generate_proposal_with_groq(service_type, client_description, experience_lev
 def index():
     proposal = ""
     if request.method == "POST":
-        service = request.form["service"]
-        client_needs = request.form["client_needs"]
+        project_name = request.form["project_name"]
+        project_details = request.form["project_details"]
         experience = request.form["experience"]
-        proposal = generate_proposal_with_groq(service, client_needs, experience)
+        proposal = generate_proposal_with_groq(project_name, project_details, experience)
     return render_template("index.html", proposal=proposal)
 
 if __name__ == "__main__":
